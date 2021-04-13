@@ -1,14 +1,13 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:string_typography/src/configs/public/common_setting.dart';
 import 'package:string_typography/src/configs/public/configuration.dart';
 import 'package:string_typography/src/configs/public/st_code_block.dart';
 import 'package:string_typography/src/configs/public/st_inline_code.dart';
 import 'package:string_typography/src/widgets/image.dart';
-import 'package:string_typography/src/widgets/inline_code.dart';
 import 'package:string_typography/src/configs/private/main_setting.dart';
-import 'package:string_typography/src/paragraph.dart';
+import 'package:string_typography/src/utils/paragraph_checker.dart';
 import 'package:string_typography/src/configs/private/tag_setting.dart';
+import 'package:string_typography/src/widgets/paragraph.dart';
 
 ///this is a widget that convert text to be widgets
 ///you can use it for your text converter or others.
@@ -190,232 +189,18 @@ class _StringTypographyState extends State<StringTypography> {
             k++;
           });
 
-          _widgets.add(_paragraph(paragraph.split(this._separator)));
+          _widgets.add(StParagraph(paragraph.split(this._separator),
+              globalStyle: this.widget.globalStyle,
+              mainsettings: this._mainsettings,
+              emailConfiguration: this.widget.emailConfiguration,
+              inlineCodeConfiguration: this.widget.inlineCodeConfiguration,
+              linkConfiguration: this.widget.linkConfiguration,
+              paragraphAlignment: this.widget.paragraphAlignment,
+              tagConfiguration: this.widget.tagConfiguration));
       }
     });
 
     setState(() {});
-  }
-
-  Widget _paragraph(List<String> words) {
-    List<InlineSpan> stSpans = [];
-    List<TextStyle> styless = [];
-    int key = 0;
-
-    words.forEach((w) {
-      if (w != "") {
-        String globalKey = "St" + key.toString();
-        key++;
-        TextSpan span = TextSpan(text: w, style: widget.globalStyle);
-        BracketType type = BracketType.none;
-
-        _mainsettings.forEach((r) {
-          if (w.contains(r.open) && w.contains(r.close)) {
-            String word = w.replaceAll(r.open, "").replaceAll(r.close, "");
-            type = BracketType.bracket;
-            if (r.type == SettingType.common) {
-              span = _mergeSpan(
-                span,
-                text: word,
-                style: span.style!.merge(r.style),
-                recognizer: r.recognizer,
-              );
-            } else if (r.type == SettingType.inlineCode) {
-              print(r.type);
-              print(word);
-
-              span = TextSpan(
-                children: [
-                  WidgetSpan(
-                      child: StInlineCode(
-                    text: word,
-                    codeConfiguration: this.widget.inlineCodeConfiguration,
-                  ))
-                ],
-              );
-            } else {
-              if (r.type == SettingType.hyperlink) {
-                var replacement = _hyperlinkReplacement(word);
-                // print(replacement);
-                word = replacement['word']!;
-                span = _mergeSpan(span,
-                    children: [
-                      WidgetSpan(
-                          child: GestureDetector(
-                        onTap: () => _gestureHandler(replacement['url']!,
-                            'onTap', Key(globalKey), r.type),
-                        onDoubleTap: () => _gestureHandler(replacement['url']!,
-                            'onDoubleTap', Key(globalKey), r.type),
-                        onLongPress: () => _gestureHandler(replacement['url']!,
-                            'onLongPress', Key(globalKey), r.type),
-                        child: Text(
-                          word,
-                          key: Key(globalKey),
-                          style: span.style!
-                              .merge(this.widget.linkConfiguration.style),
-                        ),
-                      ))
-                    ],
-                    style: span.style,
-                    text: "");
-              } else
-                span = _mergeSpan(span,
-                    children: [
-                      WidgetSpan(
-                          child: GestureDetector(
-                        onTap: () => _gestureHandler(
-                            word, 'onTap', Key(globalKey), r.type),
-                        onDoubleTap: () => _gestureHandler(
-                            word, 'onDoubleTap', Key(globalKey), r.type),
-                        onLongPress: () => _gestureHandler(
-                            word, 'onLongPress', Key(globalKey), r.type),
-                        child: Text(
-                          word,
-                          key: Key(globalKey),
-                          style: span.style!.merge(r.type == SettingType.tag
-                              ? this.widget.tagConfiguration.style
-                              : r.type == SettingType.url
-                                  ? this.widget.linkConfiguration.style
-                                  : this.widget.emailConfiguration.style),
-                        ),
-                      ))
-                    ],
-                    style: span.style,
-                    text: "");
-            }
-          } else if (w.contains(r.open)) {
-            type = BracketType.open;
-
-            span = _mergeSpan(
-              span,
-              text: w.replaceAll(r.open, ""),
-              style: span.style!.merge(r.style),
-              recognizer: r.recognizer,
-            );
-          } else if (w.contains(r.close)) {
-            type = BracketType.close;
-
-            span = _mergeSpan(
-              span,
-              text: w.replaceAll(r.close, ""),
-              style: span.style!.merge(r.style),
-              recognizer: r.recognizer,
-            );
-          }
-        });
-
-        if (type == BracketType.open) {
-          if (styless.isNotEmpty) {
-            styless.add(styless.last.merge(span.style));
-          } else {
-            styless.add(span.style!);
-          }
-          stSpans.add(_mergeSpan(span, style: styless.last));
-        } else if (type == BracketType.close) {
-          stSpans.add(_mergeSpan(span, style: styless.last.merge(span.style)));
-          styless.removeLast();
-        } else {
-          stSpans.add(_mergeSpan(span,
-              style: styless.isNotEmpty
-                  ? styless.last.merge(span.style)
-                  : span.style));
-        }
-      }
-    });
-    return LayoutBuilder(builder: (context, cs) {
-      return Container(
-        width: cs.maxWidth,
-        child: RichText(
-          text: TextSpan(children: stSpans),
-          textAlign: this.widget.paragraphAlignment,
-        ),
-      );
-    });
-  }
-
-  Map<String, String> _hyperlinkReplacement(String word) {
-    String url = '';
-    String newWord = word.replaceAllMapped(
-        RegExp(r"\[(.*?)\]\((.*?)\)", caseSensitive: false, multiLine: true),
-        (match) {
-      url = match.group(2)!;
-      return match.group(1)!;
-    });
-
-    return {'word': newWord, 'url': url};
-  }
-
-  void _gestureHandler(
-      String word, String type, Key key, SettingType settingType) {
-    switch (settingType) {
-      case SettingType.tag:
-        _gestureTag(word, type, key);
-        break;
-      case SettingType.url:
-        _gestureUrl(word, type, key);
-        break;
-      case SettingType.email:
-        _gestureEmail(word, type, key);
-        break;
-      case SettingType.hyperlink:
-        _gestureUrl(word, type, key);
-        break;
-      default:
-    }
-  }
-
-  void _gestureTag(String w, String type, Key key) {
-    switch (type) {
-      case 'onTap':
-        if (this.widget.tagConfiguration.onTap != null)
-          this.widget.tagConfiguration.onTap!(w, key);
-        break;
-      case 'onDoubleTap':
-        if (this.widget.tagConfiguration.onDoubleTap != null)
-          this.widget.tagConfiguration.onDoubleTap!(w, key);
-        break;
-      case 'onLongPress':
-        if (this.widget.tagConfiguration.onLongPress != null)
-          this.widget.tagConfiguration.onLongPress!(w, key);
-        break;
-      default:
-    }
-  }
-
-  void _gestureUrl(String w, String type, Key key) {
-    switch (type) {
-      case 'onTap':
-        if (this.widget.linkConfiguration.onTap != null)
-          this.widget.linkConfiguration.onTap!(w, key);
-        break;
-      case 'onDoubleTap':
-        if (this.widget.linkConfiguration.onDoubleTap != null)
-          this.widget.linkConfiguration.onDoubleTap!(w, key);
-        break;
-      case 'onLongPress':
-        if (this.widget.linkConfiguration.onLongPress != null)
-          this.widget.linkConfiguration.onLongPress!(w, key);
-        break;
-      default:
-    }
-  }
-
-  void _gestureEmail(String w, String type, Key key) {
-    switch (type) {
-      case 'onTap':
-        if (this.widget.emailConfiguration.onTap != null)
-          this.widget.emailConfiguration.onTap!(w, key);
-        break;
-      case 'onDoubleTap':
-        if (this.widget.emailConfiguration.onDoubleTap != null)
-          this.widget.emailConfiguration.onDoubleTap!(w, key);
-        break;
-      case 'onLongPress':
-        if (this.widget.emailConfiguration.onLongPress != null)
-          this.widget.emailConfiguration.onLongPress!(w, key);
-        break;
-      default:
-    }
   }
 
   @override
@@ -439,22 +224,4 @@ class _StringTypographyState extends State<StringTypography> {
       children: _widgets.map((e) => e).toList(),
     );
   }
-
-  TextSpan _mergeSpan(
-    TextSpan oldTS, {
-    String? text,
-    List<InlineSpan>? children,
-    GestureRecognizer? recognizer,
-    String? semanticsLabel,
-    TextStyle? style,
-  }) =>
-      TextSpan(
-          text: text ?? oldTS.text,
-          children: children ?? oldTS.children,
-          recognizer: recognizer ?? oldTS.recognizer,
-          semanticsLabel: semanticsLabel ?? oldTS.semanticsLabel,
-          style: style ?? oldTS.style);
 }
-
-enum BracketType { none, open, close, bracket }
-enum StParentAlignment { start, center, end }
