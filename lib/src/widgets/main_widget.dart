@@ -1,12 +1,14 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:string_typography/src/common_setting.dart';
-import 'package:string_typography/src/configuration.dart';
-import 'package:string_typography/src/image.dart';
-import 'package:string_typography/src/inline_code.dart';
-import 'package:string_typography/src/main_setting.dart';
+import 'package:string_typography/src/configs/public/common_setting.dart';
+import 'package:string_typography/src/configs/public/configuration.dart';
+import 'package:string_typography/src/configs/public/st_code_block.dart';
+import 'package:string_typography/src/configs/public/st_inline_code.dart';
+import 'package:string_typography/src/widgets/image.dart';
+import 'package:string_typography/src/widgets/inline_code.dart';
+import 'package:string_typography/src/configs/private/main_setting.dart';
 import 'package:string_typography/src/paragraph.dart';
-import 'package:string_typography/src/tag_setting.dart';
+import 'package:string_typography/src/configs/private/tag_setting.dart';
 
 ///this is a widget that convert text to be widgets
 ///you can use it for your text converter or others.
@@ -31,20 +33,22 @@ class StringTypography extends StatefulWidget {
 
   ///This parameter is to setUp your tag style and some gesture event. **What tags which provided?** for now,
   ///we just provide @ and #, feel free to discuss it on github issue.
-  final StConfiguration tagConfiguration;
+  final StConfig tagConfiguration;
 
   ///url or hyperlink setup is here. Styling or gesture event.
-  final StConfiguration linkConfiguration;
+  final StConfig linkConfiguration;
 
   ///email setup is here. Styling or gesture event.
-  final StConfiguration emailConfiguration;
+  final StConfig emailConfiguration;
 
   ///the text alignment for paragraph (`text`).
   final TextAlign paragraphAlignment;
 
   ///[inlinCodeConfiguration] is, like `this` <--- is inline code.
   ///it needs styling. We create any arguments on it for you, so you can customiza it.
-  final StInlineCodeConfiguration inlineCodeConfiguration;
+  final StInlineCodeConfig inlineCodeConfiguration;
+
+  final StCodeBlockConfig codeBlockConfiguration;
 
   ///this is a widget that convert text to be widgets
   ///you can use it for your text converter or others.
@@ -57,14 +61,17 @@ class StringTypography extends StatefulWidget {
       this.globalStyle,
       this.commonSetting: CommonSetting.defaultconfiguration,
       this.linkConfiguration:
-          const StConfiguration(style: TextStyle(color: Colors.blue)),
+          const StConfig(style: TextStyle(color: Colors.blue)),
       this.emailConfiguration:
-          const StConfiguration(style: TextStyle(color: Colors.blue)),
+          const StConfig(style: TextStyle(color: Colors.blue)),
       required this.text,
       this.tagConfiguration:
-          const StConfiguration(style: TextStyle(color: Colors.blue)),
+          const StConfig(style: TextStyle(color: Colors.blue)),
       this.paragraphAlignment: TextAlign.start,
-      this.inlineCodeConfiguration: const StInlineCodeConfiguration()})
+      this.inlineCodeConfiguration: const StInlineCodeConfig(),
+      this.codeBlockConfiguration: const StCodeBlockConfig(
+          decoration: BoxDecoration(color: Color(0XFF999999)),
+          textStyle: TextStyle(color: Color(0XFF000000)))})
       : super(key: key);
 
   @override
@@ -90,11 +97,17 @@ class _StringTypographyState extends State<StringTypography> {
     text = text.replaceAllMapped(TagSetting.imageSetting.regExp,
         (match) => _paragraphSeparator + match.group(0)! + _paragraphSeparator);
 
+    text = text.replaceAllMapped(TagSetting.codeBlock.regExp,
+        (match) => _paragraphSeparator + match.group(1)! + _paragraphSeparator);
+
     List<String> paragraphs = text.split(this._paragraphSeparator);
 
     paragraphs.forEach((paragraph) {
       switch (ParagraphChecker(paragraph).getType) {
         case ParagraphType.image:
+          _widgets.add(StImage(paragraph));
+          break;
+        case ParagraphType.codeBlock:
           _widgets.add(StImage(paragraph));
           break;
         default:

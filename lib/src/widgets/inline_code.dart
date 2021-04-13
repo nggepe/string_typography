@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:string_typography/src/configuration.dart';
+import 'package:string_typography/src/configs/public/st_inline_code.dart';
 
 class StInlineCode extends StatelessWidget {
   final String text;
-  final StInlineCodeConfiguration codeConfiguration;
+  final StInlineCodeConfig codeConfiguration;
   const StInlineCode({
     Key? key,
     required this.text,

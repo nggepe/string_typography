@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:string_typography/src/main_setting.dart';
+import 'package:string_typography/src/configs/private/main_setting.dart';
 
 class TagSetting {
   final RegExp regExp;
@@ -77,4 +77,8 @@ class TagSetting {
     TagSetting(
         regExp: RegExp(r"(<code>(.*?)</code>)"), type: SettingType.inlineCode)
   ];
+
+  static TagSetting codeBlock = TagSetting(
+      regExp: RegExp(r"\`\`\`\n(.*?)\`\`\`",
+          caseSensitive: false, multiLine: true, dotAll: true));
 }
