@@ -3,6 +3,8 @@ import 'package:string_typography/src/configs/public/common_setting.dart';
 import 'package:string_typography/src/configs/public/configuration.dart';
 import 'package:string_typography/src/configs/public/st_code_block.dart';
 import 'package:string_typography/src/configs/public/st_inline_code.dart';
+import 'package:string_typography/src/configs/public/st_paragraph.dart';
+import 'package:string_typography/src/widgets/code_block.dart';
 import 'package:string_typography/src/widgets/image.dart';
 import 'package:string_typography/src/configs/private/main_setting.dart';
 import 'package:string_typography/src/utils/paragraph_checker.dart';
@@ -40,8 +42,7 @@ class StringTypography extends StatefulWidget {
   ///email setup is here. Styling or gesture event.
   final StConfig emailConfiguration;
 
-  ///the text alignment for paragraph (`text`).
-  final TextAlign paragraphAlignment;
+  final StParagraphConfig paragraphConfig;
 
   ///[inlinCodeConfiguration] is, like `this` <--- is inline code.
   ///it needs styling. We create any arguments on it for you, so you can customiza it.
@@ -58,6 +59,7 @@ class StringTypography extends StatefulWidget {
   const StringTypography(
       {Key? key,
       this.globalStyle,
+      this.paragraphConfig: const StParagraphConfig(),
       this.commonSetting: CommonSetting.defaultconfiguration,
       this.linkConfiguration:
           const StConfig(style: TextStyle(color: Colors.blue)),
@@ -66,11 +68,8 @@ class StringTypography extends StatefulWidget {
       required this.text,
       this.tagConfiguration:
           const StConfig(style: TextStyle(color: Colors.blue)),
-      this.paragraphAlignment: TextAlign.start,
       this.inlineCodeConfiguration: const StInlineCodeConfig(),
-      this.codeBlockConfiguration: const StCodeBlockConfig(
-          decoration: BoxDecoration(color: Color(0XFF999999)),
-          textStyle: TextStyle(color: Color(0XFF000000)))})
+      this.codeBlockConfiguration: const StCodeBlockConfig()})
       : super(key: key);
 
   @override
@@ -97,7 +96,7 @@ class _StringTypographyState extends State<StringTypography> {
         (match) => _paragraphSeparator + match.group(0)! + _paragraphSeparator);
 
     text = text.replaceAllMapped(TagSetting.codeBlock.regExp,
-        (match) => _paragraphSeparator + match.group(1)! + _paragraphSeparator);
+        (match) => _paragraphSeparator + match.group(0)! + _paragraphSeparator);
 
     List<String> paragraphs = text.split(this._paragraphSeparator);
 
@@ -107,7 +106,9 @@ class _StringTypographyState extends State<StringTypography> {
           _widgets.add(StImage(paragraph));
           break;
         case ParagraphType.codeBlock:
-          _widgets.add(StImage(paragraph));
+          _widgets.add(StCodeBlock(
+              configuration: this.widget.codeBlockConfiguration,
+              text: paragraph));
           break;
         default:
           widget.commonSetting!.forEach((element) {
@@ -195,7 +196,7 @@ class _StringTypographyState extends State<StringTypography> {
               emailConfiguration: this.widget.emailConfiguration,
               inlineCodeConfiguration: this.widget.inlineCodeConfiguration,
               linkConfiguration: this.widget.linkConfiguration,
-              paragraphAlignment: this.widget.paragraphAlignment,
+              paragraphConfig: this.widget.paragraphConfig,
               tagConfiguration: this.widget.tagConfiguration));
       }
     });

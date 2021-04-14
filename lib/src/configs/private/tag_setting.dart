@@ -79,6 +79,6 @@ class TagSetting {
   ];
 
   static TagSetting codeBlock = TagSetting(
-      regExp: RegExp(r"\`\`\`\n(.*?)\`\`\`",
+      regExp: RegExp(r"\`\`\`\n(.*?)\n\`\`\`",
           caseSensitive: false, multiLine: true, dotAll: true));
 }

@@ -12,7 +12,7 @@ class MainSetting {
     required this.close,
     this.recognizer,
     this.style,
-    required this.type,
+    this.type: SettingType.common,
   });
 
   MainSetting copyWith({

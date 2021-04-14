@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:string_typography/src/configs/private/main_setting.dart';
+import 'package:string_typography/src/configs/public/st_paragraph.dart';
 import 'package:string_typography/src/widgets/inline_code.dart';
 import 'package:string_typography/string_typography.dart';
 
@@ -19,8 +20,7 @@ class StParagraph extends StatelessWidget {
   ///email setup is here. Styling or gesture event.
   final StConfig emailConfiguration;
 
-  ///the text alignment for paragraph (`text`).
-  final TextAlign paragraphAlignment;
+  final StParagraphConfig paragraphConfig;
 
   ///[inlinCodeConfiguration] is, like `this` <--- is inline code.
   ///it needs styling. We create any arguments on it for you, so you can customiza it.
@@ -33,7 +33,7 @@ class StParagraph extends StatelessWidget {
       required this.emailConfiguration,
       required this.inlineCodeConfiguration,
       required this.linkConfiguration,
-      required this.paragraphAlignment,
+      required this.paragraphConfig,
       required this.tagConfiguration})
       : super(key: key);
   @override
@@ -164,7 +164,8 @@ class StParagraph extends StatelessWidget {
         width: cs.maxWidth,
         child: RichText(
           text: TextSpan(children: stSpans),
-          textAlign: this.paragraphAlignment,
+          textAlign: this.paragraphConfig.textAlign,
+          textDirection: this.paragraphConfig.textDirection,
         ),
       );
     });
