@@ -73,7 +73,6 @@ class StCodeHighLight extends StatelessWidget {
       if (word != "") {
         TextStyle style = TextStyle(color: Color(0XFFAAB3BE));
         settings.forEach((cmn) {
-          print("detected");
           if (word.contains(cmn.open)) {
             word = word.replaceAll(cmn.open, "");
             style = cmn.style!;
@@ -102,18 +101,6 @@ class _HighlightSetting {
   });
 
   static List<_HighlightSetting> list = [
-    _HighlightSetting(regExp: RegExp(r"(\w+)\("), color: Color(0XFF40AAE7)),
-    _HighlightSetting(
-        regExp: RegExp(r"(\(|\)|\[\]|\{|\})"), color: Color(0XFFF2F2F2)),
-    _HighlightSetting(
-        regExp: RegExp(
-            r"(function|const|var|let|class|final|\$\w+|def|import|covariant)"),
-        color: Color(0XFFBC7CD9)),
-    _HighlightSetting(
-        regExp: RegExp(r"([0-9A-Fa-f]{6})"), color: Color(0XFFBA9358)),
-    _HighlightSetting(
-        regExp: RegExp("true|false", caseSensitive: false, unicode: true),
-        color: Color(0XFFBA9358)),
     _HighlightSetting(
         regExp: RegExp(
             "this|return|switch|case|break|super|assert|while|for|if|else",
@@ -121,9 +108,25 @@ class _HighlightSetting {
             unicode: true),
         color: Color(0XFFCF6B75)),
     _HighlightSetting(
+        regExp: RegExp(
+            r"(function|const|var|let|class|final|\$\w+|def|import|covariant)"),
+        color: Color(0XFFBC7CD9)),
+    _HighlightSetting(
+        regExp: RegExp(r"([^A-Z]\w+)\("), color: Color(0XFF40AAE7)),
+    _HighlightSetting(
+        regExp: RegExp(r"(\(|\)|\[\]|\{|\})"), color: Color(0XFFF2F2F2)),
+
+    // _HighlightSetting(
+    //     regExp: RegExp(r"([0-9A-Fa-f]{6})"), color: Color(0XFFBA9358)),
+    _HighlightSetting(
+        regExp: RegExp("true|false", caseSensitive: false, unicode: true),
+        color: Color(0XFFBA9358)),
+
+    _HighlightSetting(
         regExp: RegExp(r"(\|\||\:|\;|\*|\+|\=)", caseSensitive: false),
         color: Color(0XFFDD73D2)),
-    _HighlightSetting(regExp: RegExp(r"([A-Z]\w+)"), color: Color(0XFFEBBE7B)),
+    _HighlightSetting(
+        regExp: RegExp(r"\s([A-Z]\w+)"), color: Color(0XFFEBBE7B)),
   ];
 
   static _HighlightSetting comment = _HighlightSetting(

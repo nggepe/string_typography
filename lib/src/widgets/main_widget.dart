@@ -82,6 +82,8 @@ class _StringTypographyState extends State<StringTypography> {
   final String _paragraphSeparator = "™»p\np«™";
   List<Widget> _widgets = [];
 
+  bool loading = true;
+
   @override
   void initState() {
     _process(widget.text);
@@ -201,25 +203,37 @@ class _StringTypographyState extends State<StringTypography> {
       }
     });
 
-    setState(() {});
+    setState(() {
+      loading = false;
+    });
   }
 
   @override
   void didUpdateWidget(covariant StringTypography oldWidget) {
+    setState(() {
+      loading = true;
+    });
     _widgets = [];
     _process(widget.text);
     super.didUpdateWidget(oldWidget);
   }
 
-  @override
-  void didChangeDependencies() {
-    _widgets = [];
-    _process(widget.text);
-    super.didChangeDependencies();
-  }
+  // @override
+  // void didChangeDependencies() {
+  //   setState(() {
+  //     loading = true;
+  //   });
+  //   _widgets = [];
+  //   _process(widget.text);
+  //   super.didChangeDependencies();
+  // }
 
   @override
   Widget build(BuildContext context) {
+    if (loading == true)
+      return Container(
+        child: CircularProgressIndicator(),
+      );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: _widgets.map((e) => e).toList(),
