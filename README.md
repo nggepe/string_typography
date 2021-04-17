@@ -6,6 +6,72 @@ Our goal is all of stuff can be customizeable.
 Here a demo
 <img src="https://raw.githubusercontent.com/nggepe/string_typography/master/doc/st_demo.gif" />
 
+# Features
+
+
+## Links
+
+1. Automatically link detection
+2. Event handler of a link. It will be a call back like `yourfunction(url, key){}`
+3. Styling your links
+
+## Hyper Links
+
+1. Automatically hyperlink detection with `regular expression`. for now the hyperlink pattern is like this -> `[text](url)` 
+2. Event handler of it
+3. Styiling your links
+
+## Tags
+
+1. Automatically tag detection, for now we create #tag and @tag
+2. Event handler of it
+3. Styiling your tags
+
+## Email
+
+1. Automatically email detection
+2. Event handler of it
+3. Styling your email text
+
+## Inline Code
+
+if you don't know what is "inline code", "inline code is like `this`" (some characters that **marked**).
+
+1. Auto detection with regular expression.
+example: 
+```dart
+`text`
+```
+2. Decoration of the box
+3. Styling your text
+
+## Image
+
+1. Automatically Image build that depend on your text
+example
+```html
+<img src="url" width="50px" height="50px" />
+```
+
+## Code Bloc
+
+1. Automatically build code block that depen on your text
+2. Copy clippboard configuration
+3. Code highlihgt
+
+## Common
+
+it is some customization that you can use to build your own typography, the default is
+
+1. `**bold**` to be **bold**
+2. `*italic*` to be *italic*
+3. `_underline_` to be underline
+
+## New features?
+
+1. feel free to request features at https://github.com/nggepe/string_typography
+
+# Options
 
 There are some options that you have to know, these are:
 
