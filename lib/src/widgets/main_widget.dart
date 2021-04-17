@@ -218,21 +218,14 @@ class _StringTypographyState extends State<StringTypography> {
     super.didUpdateWidget(oldWidget);
   }
 
-  // @override
-  // void didChangeDependencies() {
-  //   setState(() {
-  //     loading = true;
-  //   });
-  //   _widgets = [];
-  //   _process(widget.text);
-  //   super.didChangeDependencies();
-  // }
-
   @override
   Widget build(BuildContext context) {
     if (loading == true)
       return Container(
-        child: CircularProgressIndicator(),
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation(
+              this.widget.globalStyle?.color ?? Colors.green),
+        ),
       );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
