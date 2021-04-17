@@ -69,7 +69,7 @@ it is some customization that you can use to build your own typography, the defa
 
 ## New features?
 
-1. feel free to request features at https://github.com/nggepe/string_typography
+1. feel free to request features at https://github.com/nggepe/string_typography/issues
 
 # Options
 
