@@ -162,11 +162,17 @@ class StParagraph extends StatelessWidget {
     return LayoutBuilder(builder: (context, cs) {
       return Container(
         width: cs.maxWidth,
-        child: RichText(
-          text: TextSpan(children: stSpans),
-          textAlign: this.paragraphConfig.textAlign,
-          textDirection: this.paragraphConfig.textDirection,
-        ),
+        child: this.paragraphConfig.selectable
+            ? SelectableText.rich(
+                TextSpan(children: stSpans),
+                textAlign: this.paragraphConfig.textAlign,
+                textDirection: this.paragraphConfig.textDirection,
+              )
+            : RichText(
+                text: TextSpan(children: stSpans),
+                textAlign: this.paragraphConfig.textAlign,
+                textDirection: this.paragraphConfig.textDirection,
+              ),
       );
     });
   }

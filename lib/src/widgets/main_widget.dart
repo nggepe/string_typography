@@ -222,10 +222,7 @@ class _StringTypographyState extends State<StringTypography> {
   Widget build(BuildContext context) {
     if (loading == true)
       return Container(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation(
-              this.widget.globalStyle?.color ?? Colors.green),
-        ),
+        child: CircularProgressIndicator(),
       );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
