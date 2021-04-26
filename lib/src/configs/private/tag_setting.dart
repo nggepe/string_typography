@@ -22,16 +22,17 @@ class TagSetting {
     );
   }
 
-  static List<TagSetting> defaultconfiguration = [
-    TagSetting(
-      regExp:
-          RegExp(r"\[(.*?)\]\((.*?)\)", caseSensitive: false, multiLine: true),
-      style: TextStyle(
-        fontWeight: FontWeight.bold,
-        color: Colors.red,
-      ),
-      type: SettingType.hyperlink,
+  static TagSetting hyperlink = TagSetting(
+    regExp:
+        RegExp(r"\[(.*?)\]\((.*?)\)", caseSensitive: false, multiLine: true),
+    style: TextStyle(
+      fontWeight: FontWeight.bold,
+      color: Colors.red,
     ),
+    type: SettingType.hyperlink,
+  );
+
+  static List<TagSetting> defaultconfiguration = [
     TagSetting(
       regExp: RegExp(r"\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b",
           caseSensitive: false, multiLine: true),

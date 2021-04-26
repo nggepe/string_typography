@@ -25,7 +25,7 @@ class StParagraph extends StatelessWidget {
 
   ///[inlinCodeConfiguration] is, like `this` <--- is inline code.
   ///it needs styling. We create any arguments on it for you, so you can customiza it.
-  final StInlineCodeConfig inlineCodeConfiguration;
+  final StConfig inlineCodeConfiguration;
 
   StParagraph(this.words,
       {Key? key,
@@ -40,18 +40,40 @@ class StParagraph extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    DebounceTap debounceTap = DebounceTap()
-      ..callback = (a) {
-        print(a);
-      };
     List<TextSpan> stSpans = [];
     List<TextStyle> styless = [];
-    int key = 0;
+    final DebounceTap _debounceTap = DebounceTap((tt, st, w, local, global) {
+      print(w);
+      print(st);
+      switch (st) {
+        case SettingType.email:
+          _gestureEmail(w, tt, local, global);
+          break;
+        case SettingType.url:
+          _gestureUrl(w, tt, local, global);
+          break;
+        case SettingType.inlineCode:
+          _gestureInlineCode(w, tt, local, global);
+          break;
+        case SettingType.tag:
+          _gestureTag(w, tt, local, global);
+          break;
+        default:
+      }
+    });
+
+    GestureRecognizer _recognizer(String word, SettingType settingType) {
+      return TapGestureRecognizer()
+        ..onTapDown = (details) {
+          _debounceTap.tapDown(settingType, word, details);
+        }
+        ..onTapUp = (details) {
+          _debounceTap.tapUp(settingType, word, details);
+        };
+    }
 
     words.forEach((w) {
       if (w != "") {
-        String globalKey = "St" + key.toString();
-        key++;
         TextSpan span = TextSpan(text: w, style: this.globalStyle);
         BracketType type = BracketType.none;
 
@@ -67,77 +89,30 @@ class StParagraph extends StatelessWidget {
                 recognizer: r.recognizer,
               );
             } else if (r.type == SettingType.inlineCode) {
-              span = TextSpan(
+              span = _mergeSpan(span,
                   text: " " + word + " ",
                   style: this.inlineCodeConfiguration.style,
-                  recognizer: TapGestureRecognizer()
-                    ..onTapDown = (details) {
-                      debounceTap.tapDown();
-                    }
-                    ..onTapUp = (details) {
-                      debounceTap.tapUp();
-                    });
-
-              // TextSpan(
-              //   text: " " + word + " ",
-              //   style: TextStyle(backgroundColor: Colors.blue),
-              //   children: [
-              // WidgetSpan(
-              //     child: StInlineCode(
-              //   text: word,
-              //   codeConfiguration: this.inlineCodeConfiguration,
-              // ))
-              //   ],
-              // );
+                  recognizer: _recognizer(word, SettingType.inlineCode));
             } else {
               if (r.type == SettingType.hyperlink) {
                 var replacement = _hyperlinkReplacement(word);
-                // print(replacement);
                 word = replacement['word']!;
+                print(replacement);
+                print("disini ");
                 span = _mergeSpan(span,
-                    children: [
-                      WidgetSpan(
-                          child: GestureDetector(
-                        onTap: () => _gestureHandler(replacement['url']!,
-                            'onTap', Key(globalKey), r.type),
-                        onDoubleTap: () => _gestureHandler(replacement['url']!,
-                            'onDoubleTap', Key(globalKey), r.type),
-                        onLongPress: () => _gestureHandler(replacement['url']!,
-                            'onLongPress', Key(globalKey), r.type),
-                        child: Text(
-                          word,
-                          key: Key(globalKey),
-                          style:
-                              span.style!.merge(this.linkConfiguration.style),
-                        ),
-                      ))
-                    ],
-                    style: span.style,
-                    text: "");
+                    style: span.style!.merge(this.linkConfiguration.style),
+                    text: word,
+                    recognizer:
+                        _recognizer(replacement['url']!, SettingType.url));
               } else
                 span = _mergeSpan(span,
-                    children: [
-                      WidgetSpan(
-                          child: GestureDetector(
-                        onTap: () => _gestureHandler(
-                            word, 'onTap', Key(globalKey), r.type),
-                        onDoubleTap: () => _gestureHandler(
-                            word, 'onDoubleTap', Key(globalKey), r.type),
-                        onLongPress: () => _gestureHandler(
-                            word, 'onLongPress', Key(globalKey), r.type),
-                        child: Text(
-                          word,
-                          key: Key(globalKey),
-                          style: span.style!.merge(r.type == SettingType.tag
-                              ? this.tagConfiguration.style
-                              : r.type == SettingType.url
-                                  ? this.linkConfiguration.style
-                                  : this.emailConfiguration.style),
-                        ),
-                      ))
-                    ],
-                    style: span.style,
-                    text: "");
+                    text: word,
+                    style: span.style!.merge(r.type == SettingType.tag
+                        ? this.tagConfiguration.style
+                        : r.type == SettingType.url
+                            ? this.linkConfiguration.style
+                            : this.emailConfiguration.style),
+                    recognizer: _recognizer(word, r.type));
             }
           } else if (w.contains(r.open)) {
             type = BracketType.open;
@@ -190,101 +165,67 @@ class StParagraph extends StatelessWidget {
     });
   }
 
-  Map<String, String> _hyperlinkReplacement(String word) {
-    String url = '';
-    String newWord = word.replaceAllMapped(
-        RegExp(r"\[(.*?)\]\((.*?)\)", caseSensitive: false, multiLine: true),
-        (match) {
-      url = match.group(2)!;
-      return match.group(1)!;
-    });
-
-    return {'word': newWord, 'url': url};
-  }
-
-  void _gestureHandler(
-      String word, String type, Key key, SettingType settingType) {
-    switch (settingType) {
-      case SettingType.tag:
-        _gestureTag(word, type, key);
-        break;
-      case SettingType.url:
-        _gestureUrl(word, type, key);
-        break;
-      case SettingType.email:
-        _gestureEmail(word, type, key);
-        break;
-      case SettingType.hyperlink:
-        _gestureUrl(word, type, key);
-        break;
-      default:
-    }
-  }
-
-  TextSpan _mergeSpan(
-    TextSpan oldTS, {
-    String? text,
-    List<InlineSpan>? children,
-    GestureRecognizer? recognizer,
-    String? semanticsLabel,
-    TextStyle? style,
-  }) =>
-      TextSpan(
-          text: text ?? oldTS.text,
-          children: children ?? oldTS.children,
-          recognizer: recognizer ?? oldTS.recognizer,
-          semanticsLabel: semanticsLabel ?? oldTS.semanticsLabel,
-          style: style ?? oldTS.style);
-
-  void _gestureTag(String w, String type, Key key) {
+  void _gestureTag(
+      String w, TapType type, Offset localPosition, Offset globalPosition) {
     switch (type) {
-      case 'onTap':
+      case TapType.tap:
         if (this.tagConfiguration.onTap != null)
-          this.tagConfiguration.onTap!(w, key);
+          this.tagConfiguration.onTap!(w, localPosition, globalPosition);
         break;
-      case 'onDoubleTap':
-        if (this.tagConfiguration.onDoubleTap != null)
-          this.tagConfiguration.onDoubleTap!(w, key);
-        break;
-      case 'onLongPress':
+
+      case TapType.longTap:
         if (this.tagConfiguration.onLongPress != null)
-          this.tagConfiguration.onLongPress!(w, key);
+          this.tagConfiguration.onLongPress!(w, localPosition, globalPosition);
         break;
       default:
     }
   }
 
-  void _gestureUrl(String w, String type, Key key) {
+  void _gestureUrl(
+      String w, TapType type, Offset localPosition, Offset globalPosition) {
     switch (type) {
-      case 'onTap':
+      case TapType.tap:
         if (this.linkConfiguration.onTap != null)
-          this.linkConfiguration.onTap!(w, key);
+          this.linkConfiguration.onTap!(w, localPosition, globalPosition);
         break;
-      case 'onDoubleTap':
-        if (this.linkConfiguration.onDoubleTap != null)
-          this.linkConfiguration.onDoubleTap!(w, key);
-        break;
-      case 'onLongPress':
+
+      case TapType.longTap:
         if (this.linkConfiguration.onLongPress != null)
-          this.linkConfiguration.onLongPress!(w, key);
+          this.linkConfiguration.onLongPress!(w, localPosition, globalPosition);
         break;
       default:
     }
   }
 
-  void _gestureEmail(String w, String type, Key key) {
+  void _gestureEmail(
+      String w, TapType type, Offset localPosition, Offset globalPosition) {
     switch (type) {
-      case 'onTap':
+      case TapType.tap:
         if (this.emailConfiguration.onTap != null)
-          this.emailConfiguration.onTap!(w, key);
+          this.emailConfiguration.onTap!(w, localPosition, globalPosition);
         break;
-      case 'onDoubleTap':
-        if (this.emailConfiguration.onDoubleTap != null)
-          this.emailConfiguration.onDoubleTap!(w, key);
-        break;
-      case 'onLongPress':
+
+      case TapType.longTap:
         if (this.emailConfiguration.onLongPress != null)
-          this.emailConfiguration.onLongPress!(w, key);
+          this.emailConfiguration.onLongPress!(
+              w, localPosition, globalPosition);
+        break;
+      default:
+    }
+  }
+
+  void _gestureInlineCode(
+      String w, TapType type, Offset localPosition, Offset globalPosition) {
+    switch (type) {
+      case TapType.tap:
+        if (this.inlineCodeConfiguration.onTap != null)
+          this.inlineCodeConfiguration.onTap!(w, localPosition, globalPosition);
+        break;
+
+      case TapType.longTap:
+        if (this.inlineCodeConfiguration.onLongPress != null)
+          this.inlineCodeConfiguration.onLongPress!(
+              w, localPosition, globalPosition);
         break;
       default:
     }
@@ -292,3 +233,30 @@ class StParagraph extends StatelessWidget {
 }
 
 enum BracketType { none, open, close, bracket }
+
+Map<String, String> _hyperlinkReplacement(String word) {
+  String url = '';
+  String newWord = word.replaceAllMapped(
+      RegExp(r"\[(.*?)\]\((.*?)\)",
+          multiLine: true, dotAll: true, unicode: true), (match) {
+    url = match.group(2)!;
+    return match.group(1)!;
+  });
+
+  return {'word': newWord, 'url': url};
+}
+
+TextSpan _mergeSpan(
+  TextSpan oldTS, {
+  String? text,
+  List<InlineSpan>? children,
+  GestureRecognizer? recognizer,
+  String? semanticsLabel,
+  TextStyle? style,
+}) =>
+    TextSpan(
+        text: text ?? oldTS.text,
+        children: children ?? oldTS.children,
+        recognizer: recognizer ?? oldTS.recognizer,
+        semanticsLabel: semanticsLabel ?? oldTS.semanticsLabel,
+        style: style ?? oldTS.style);
