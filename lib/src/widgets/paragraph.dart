@@ -2,7 +2,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:string_typography/src/configs/private/main_setting.dart';
 import 'package:string_typography/src/configs/public/st_paragraph.dart';
-import 'package:string_typography/src/widgets/inline_code.dart';
+import 'package:string_typography/src/utils/debounce.dart';
+
 import 'package:string_typography/string_typography.dart';
 
 class StParagraph extends StatelessWidget {
@@ -26,7 +27,7 @@ class StParagraph extends StatelessWidget {
   ///it needs styling. We create any arguments on it for you, so you can customiza it.
   final StInlineCodeConfig inlineCodeConfiguration;
 
-  const StParagraph(this.words,
+  StParagraph(this.words,
       {Key? key,
       required this.globalStyle,
       required this.mainsettings,
@@ -36,9 +37,14 @@ class StParagraph extends StatelessWidget {
       required this.paragraphConfig,
       required this.tagConfiguration})
       : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    List<InlineSpan> stSpans = [];
+    DebounceTap debounceTap = DebounceTap()
+      ..callback = (a) {
+        print(a);
+      };
+    List<TextSpan> stSpans = [];
     List<TextStyle> styless = [];
     int key = 0;
 
@@ -62,14 +68,27 @@ class StParagraph extends StatelessWidget {
               );
             } else if (r.type == SettingType.inlineCode) {
               span = TextSpan(
-                children: [
-                  WidgetSpan(
-                      child: StInlineCode(
-                    text: word,
-                    codeConfiguration: this.inlineCodeConfiguration,
-                  ))
-                ],
-              );
+                  text: " " + word + " ",
+                  style: this.inlineCodeConfiguration.style,
+                  recognizer: TapGestureRecognizer()
+                    ..onTapDown = (details) {
+                      debounceTap.tapDown();
+                    }
+                    ..onTapUp = (details) {
+                      debounceTap.tapUp();
+                    });
+
+              // TextSpan(
+              //   text: " " + word + " ",
+              //   style: TextStyle(backgroundColor: Colors.blue),
+              //   children: [
+              // WidgetSpan(
+              //     child: StInlineCode(
+              //   text: word,
+              //   codeConfiguration: this.inlineCodeConfiguration,
+              // ))
+              //   ],
+              // );
             } else {
               if (r.type == SettingType.hyperlink) {
                 var replacement = _hyperlinkReplacement(word);
@@ -162,17 +181,11 @@ class StParagraph extends StatelessWidget {
     return LayoutBuilder(builder: (context, cs) {
       return Container(
         width: cs.maxWidth,
-        child: this.paragraphConfig.selectable
-            ? SelectableText.rich(
-                TextSpan(children: stSpans),
-                textAlign: this.paragraphConfig.textAlign,
-                textDirection: this.paragraphConfig.textDirection,
-              )
-            : RichText(
-                text: TextSpan(children: stSpans),
-                textAlign: this.paragraphConfig.textAlign,
-                textDirection: this.paragraphConfig.textDirection,
-              ),
+        child: RichText(
+          text: TextSpan(children: stSpans),
+          textAlign: this.paragraphConfig.textAlign,
+          textDirection: this.paragraphConfig.textDirection,
+        ),
       );
     });
   }
