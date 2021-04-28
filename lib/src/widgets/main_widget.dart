@@ -4,12 +4,6 @@ import 'package:string_typography/src/configs/public/configuration.dart';
 import 'package:string_typography/src/configs/public/st_code_block.dart';
 import 'package:string_typography/src/configs/public/st_paragraph.dart';
 import 'package:string_typography/src/utils/paragraph_speller.dart';
-import 'package:string_typography/src/widgets/code_block.dart';
-import 'package:string_typography/src/widgets/image.dart';
-import 'package:string_typography/src/configs/private/main_setting.dart';
-import 'package:string_typography/src/utils/paragraph_checker.dart';
-import 'package:string_typography/src/configs/private/tag_setting.dart';
-import 'package:string_typography/src/widgets/paragraph.dart';
 
 ///this is a widget that convert text to be widgets
 ///you can use it for your text converter or others.
@@ -78,9 +72,6 @@ class StringTypography extends StatefulWidget {
 }
 
 class _StringTypographyState extends State<StringTypography> {
-  List<MainSetting> _mainsettings = [];
-  final String _separator = "™»\n«™";
-  final String _paragraphSeparator = "™»p\np«™";
   List<Widget> _widgets = [];
 
   bool loading = true;
@@ -92,99 +83,16 @@ class _StringTypographyState extends State<StringTypography> {
   }
 
   void _process(String text) {
-    _mainsettings = [];
-
-    text = text.replaceAllMapped(TagSetting.imageSetting.regExp,
-        (match) => _paragraphSeparator + match.group(0)! + _paragraphSeparator);
-
-    text = text.replaceAllMapped(TagSetting.codeBlock.regExp,
-        (match) => _paragraphSeparator + match.group(0)! + _paragraphSeparator);
-
-    List<String> paragraphs = text.split(this._paragraphSeparator);
-
-    paragraphs.forEach((paragraph) {
-      switch (ParagraphChecker(paragraph).getType) {
-        case ParagraphType.image:
-          _widgets.add(StImage(paragraph));
-          break;
-        case ParagraphType.codeBlock:
-          _widgets.add(StCodeBlock(
-              configuration: this.widget.codeBlockConfiguration,
-              text: paragraph));
-          break;
-        default:
-          final ParagraphSpeller speller = ParagraphSpeller();
-          var common =
-              speller.commonSetting(widget.commonSetting ?? [], paragraph);
-          paragraph = common.paragraph;
-          _mainsettings.addAll(common.mainSettings);
-
-          int j = 0;
-          TagSetting.defaultconfiguration.forEach((element) {
-            String open = "™»${j.toString()}Q«™",
-                close = "™»${j.toString()}D«™";
-            paragraph = paragraph.replaceAllMapped(element.regExp, (match) {
-              String confirm = "";
-
-              if (paragraph.length > match.end)
-                confirm = paragraph.substring(match.end, match.end + 1);
-              if (match.start > 0)
-                confirm = paragraph.substring(match.start - 1, match.start);
-
-              if (confirm == "" || confirm == " " || confirm == "\n")
-                return this._separator +
-                    "$open${match.group(0)}$close" +
-                    this._separator;
-              else
-                return match.group(0)!;
-            });
-            _mainsettings.add(MainSetting(
-                open: open,
-                close: close,
-                style: element.style,
-                type: element.type));
-            j++;
-          });
-
-          int k = 0;
-          TagSetting.inlineCode.forEach((iC) {
-            String open = "™»${k.toString()}R«™",
-                close = "™»${k.toString()}E«™";
-            paragraph = paragraph.replaceAllMapped(iC.regExp, (match) {
-              String confirm = "";
-
-              if (paragraph.length > match.end)
-                confirm = paragraph.substring(match.end, match.end + 1);
-              if (match.start > 0)
-                confirm = paragraph.substring(match.start - 1, match.start);
-
-              if (confirm == "" || confirm == " " || confirm == "\n")
-                return this._separator +
-                    "$open${match.group(2)}$close" +
-                    this._separator;
-              else
-                return match.group(0)!;
-            });
-
-            _mainsettings.add(MainSetting(
-                open: open,
-                close: close,
-                type: iC.type,
-                style: this.widget.inlineCodeConfiguration.style));
-
-            k++;
-          });
-
-          _widgets.add(StParagraph(paragraph.split(this._separator),
-              globalStyle: this.widget.globalStyle,
-              mainsettings: this._mainsettings,
-              emailConfiguration: this.widget.emailConfiguration,
-              inlineCodeConfiguration: this.widget.inlineCodeConfiguration,
-              linkConfiguration: this.widget.linkConfiguration,
-              paragraphConfig: this.widget.paragraphConfig,
-              tagConfiguration: this.widget.tagConfiguration));
-      }
-    });
+    final ParagraphSpeller speller = ParagraphSpeller(
+        codeBlockConfig: widget.codeBlockConfiguration,
+        commonSetting: widget.commonSetting ?? [],
+        inlineCodeConfiguration: widget.inlineCodeConfiguration,
+        globalStyle: widget.globalStyle,
+        emailConfiguration: widget.emailConfiguration,
+        tagConfiguration: widget.tagConfiguration,
+        linkConfiguration: widget.linkConfiguration,
+        paragraphConfig: widget.paragraphConfig);
+    _widgets = speller.process(text);
 
     setState(() {
       loading = false;

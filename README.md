@@ -3,6 +3,7 @@
 This package is a `String` converter which is usable to convert plain string to be widgets.
 Our goal is all of stuff can be customizeable.
 
+Note: this plugin is still under development, and some APIs not be available yet. [Feed back](https://github.com/nggepe/string_typography) and [Pull requesrt](https://github.com/nggepe/string_typography) are most welcome!
 
 
 # Features
