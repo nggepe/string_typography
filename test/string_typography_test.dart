@@ -37,9 +37,11 @@ void main() {
         key: Key("testWidget"),
       ),
     ));
-    final textFinder = find.text("Hello world!");
 
-    expect(textFinder, textFinder);
+    expect(
+        find.byWidgetPredicate((Widget widget) =>
+            widget is RichText && widget.text.toPlainText() == 'Hello world!'),
+        findsOneWidget);
   });
 
   testWidgets("Image finder", (WidgetTester tester) async {
