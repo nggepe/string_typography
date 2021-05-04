@@ -35,8 +35,7 @@ class ParagraphSpeller {
   final String _separator = "™»\n«™";
   final String _paragraphSeparator = "™»p\np«™";
 
-  List<Widget> process(String? text) {
-    if (text == "" || text == null) return [];
+  List<Widget> process(String text) {
     List<Widget> widgets = [];
     int i = 0;
     List<MainSetting> mainsettings = [];
