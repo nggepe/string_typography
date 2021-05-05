@@ -26,7 +26,7 @@ class ParagraphSpeller {
       {required this.codeBlockConfig,
       required this.commonSetting,
       required this.inlineCodeConfiguration,
-      required this.globalStyle,
+      this.globalStyle,
       required this.emailConfiguration,
       required this.tagConfiguration,
       required this.linkConfiguration,
@@ -34,9 +34,9 @@ class ParagraphSpeller {
 
   final String _separator = "™»\n«™";
   final String _paragraphSeparator = "™»p\np«™";
+  final String _hyperlinkSeparator = "™»hy\nhy«™";
 
   List<Widget> process(String text) {
-    if (text == "" || text == "null") return [];
     List<Widget> widgets = [];
     int i = 0;
     List<MainSetting> mainsettings = [];
@@ -50,104 +50,147 @@ class ParagraphSpeller {
     List<String> paragraphs = text.split(this._paragraphSeparator);
 
     paragraphs.forEach((paragraph) {
-      switch (ParagraphChecker(paragraph).getType) {
-        case ParagraphType.image:
-          widgets.add(StImage(paragraph));
-          break;
-        case ParagraphType.codeBlock:
-          widgets.add(StCodeBlock(
-              configuration: this.codeBlockConfig, text: paragraph));
-          break;
-        default:
-          // final ParagraphSpeller speller = ParagraphSpeller();
-          this.commonSetting.forEach((element) {
-            RegExp exp = new RegExp(
-                r"" + element.open + "(\\S.*?)" + element.close,
-                caseSensitive: false,
-                multiLine: true,
-                dotAll: true);
-            String open = "™»${i.toString()}O«™",
-                close = "™»${i.toString()}C«™";
-            paragraph = paragraph.replaceAllMapped(exp, (match) {
-              return this._separator +
-                  "$open${match.group(1)}$close" +
-                  this._separator;
-            });
-            mainsettings.add(MainSetting(
-              open: open,
-              close: close,
-              type: SettingType.common,
-              style: element.style,
-              recognizer: element.recognizer,
+      if (paragraph != "")
+        switch (ParagraphChecker(paragraph).getType) {
+          case ParagraphType.image:
+            widgets.add(StImage(
+              paragraph,
             ));
-            i++;
-          });
-
-          int j = 0;
-          TagSetting.defaultconfiguration.forEach((element) {
-            String open = "™»${j.toString()}Q«™",
-                close = "™»${j.toString()}D«™";
-            paragraph = paragraph.replaceAllMapped(element.regExp, (match) {
-              String confirm = "";
-
-              if (paragraph.length > match.end)
-                confirm = paragraph.substring(match.end, match.end + 1);
-              if (match.start > 0)
-                confirm = paragraph.substring(match.start - 1, match.start);
-
-              if (confirm == "" || confirm == " " || confirm == "\n")
+            break;
+          case ParagraphType.codeBlock:
+            widgets.add(StCodeBlock(
+                configuration: this.codeBlockConfig, text: paragraph));
+            break;
+          default:
+            this.commonSetting.forEach((element) {
+              RegExp exp = new RegExp(
+                  r"" + element.open + "(\\S.*?)" + element.close,
+                  caseSensitive: false,
+                  multiLine: true,
+                  dotAll: true);
+              String open = "™»${i.toString()}O«™",
+                  close = "™»${i.toString()}C«™";
+              paragraph = paragraph.replaceAllMapped(exp, (match) {
                 return this._separator +
-                    "$open${match.group(0)}$close" +
+                    "$open${match.group(1)}$close" +
                     this._separator;
-              else
-                return match.group(0)!;
-            });
-            mainsettings.add(MainSetting(
+              });
+              mainsettings.add(MainSetting(
                 open: open,
                 close: close,
+                type: SettingType.common,
                 style: element.style,
-                type: element.type));
-            j++;
-          });
-
-          int k = 0;
-          TagSetting.inlineCode.forEach((iC) {
-            String open = "™»${k.toString()}R«™",
-                close = "™»${k.toString()}E«™";
-            paragraph = paragraph.replaceAllMapped(iC.regExp, (match) {
-              String confirm = "";
-
-              if (paragraph.length > match.end)
-                confirm = paragraph.substring(match.end, match.end + 1);
-              if (match.start > 0)
-                confirm = paragraph.substring(match.start - 1, match.start);
-
-              if (confirm == "" || confirm == " " || confirm == "\n")
-                return this._separator +
-                    "$open${match.group(2)}$close" +
-                    this._separator;
-              else
-                return match.group(0)!;
+                recognizer: element.recognizer,
+              ));
+              i++;
             });
 
-            mainsettings.add(MainSetting(
-                open: open,
-                close: close,
-                type: iC.type,
-                style: this.inlineCodeConfiguration.style));
+            ///hyperlink separator must be here
 
-            k++;
-          });
+            List<String> sentences = paragraph
+                .replaceAllMapped(TagSetting.hyperlink.regExp, (match) {
+              //to remove crash with url
+              // String confirm = "";
 
-          widgets.add(StParagraph(paragraph.split(this._separator),
-              globalStyle: this.globalStyle,
-              mainsettings: mainsettings,
-              emailConfiguration: this.emailConfiguration,
-              inlineCodeConfiguration: this.inlineCodeConfiguration,
-              linkConfiguration: this.linkConfiguration,
-              paragraphConfig: this.paragraphConfig,
-              tagConfiguration: this.tagConfiguration));
-      }
+              // if (paragraph.length > match.end)
+              //   confirm = paragraph.substring(match.end, match.end + 1);
+              // if (match.start > 0)
+              //   confirm = paragraph.substring(match.start - 1, match.start);
+
+              // if (confirm == "" || confirm == " " || confirm == "\n") {
+              return this._hyperlinkSeparator +
+                  "™»Q«™${match.group(0)}™»Q«™" +
+                  this._hyperlinkSeparator;
+              // } else
+              //   return match.group(0)!;
+            }).split(this._hyperlinkSeparator);
+            String newSentences = "";
+            sentences.forEach((sentence) {
+              if (!sentence.contains("™»Q«™") && sentence != "") {
+                int j = 0;
+                TagSetting.defaultconfiguration.forEach((element) {
+                  String open = "™»${j.toString()}Q«™",
+                      close = "™»${j.toString()}D«™";
+                  sentence = sentence.replaceAllMapped(element.regExp, (match) {
+                    String confirm = "";
+
+                    if (sentence.length > match.end)
+                      confirm = sentence.substring(match.end, match.end + 1);
+                    if (match.start > 0)
+                      confirm =
+                          sentence.substring(match.start - 1, match.start);
+
+                    if (confirm == "" || confirm == " " || confirm == "\n")
+                      return this._separator +
+                          "$open${match.group(0)}$close" +
+                          this._separator;
+                    else
+                      return match.group(0)!;
+                  });
+                  mainsettings.add(MainSetting(
+                      open: open,
+                      close: close,
+                      style: element.style,
+                      type: element.type));
+                  j++;
+                });
+
+                int k = 0;
+                TagSetting.inlineCode.forEach((iC) {
+                  String open = "™»${k.toString()}R«™",
+                      close = "™»${k.toString()}E«™";
+                  sentence = sentence.replaceAllMapped(iC.regExp, (match) {
+                    String confirm = "";
+
+                    if (sentence.length > match.end)
+                      confirm = sentence.substring(match.end, match.end + 1);
+                    if (match.start > 0)
+                      confirm =
+                          sentence.substring(match.start - 1, match.start);
+
+                    if (confirm == "" || confirm == " " || confirm == "\n")
+                      return this._separator +
+                          "$open${match.group(2)}$close" +
+                          this._separator;
+                    else
+                      return match.group(0)!;
+                  });
+
+                  if (mainsettings.indexWhere((element) =>
+                          element.open == open && element.close == close) ==
+                      -1)
+                    mainsettings.add(MainSetting(
+                        open: open,
+                        close: close,
+                        type: iC.type,
+                        style: this.inlineCodeConfiguration.style));
+
+                  k++;
+                });
+              } else if (sentence != "") {
+                sentence += this._separator;
+                if (mainsettings
+                        .indexWhere((element) => element.open == "™»Q«™") ==
+                    -1)
+                  mainsettings.add(MainSetting(
+                      open: "™»Q«™",
+                      close: "™»Q«™",
+                      type: TagSetting.hyperlink.type));
+              }
+
+              newSentences += sentence;
+            });
+
+            List<String> stParagraph = newSentences.split(this._separator);
+            widgets.add(StParagraph(stParagraph,
+                globalStyle: this.globalStyle,
+                mainsettings: mainsettings,
+                emailConfiguration: this.emailConfiguration,
+                inlineCodeConfiguration: this.inlineCodeConfiguration,
+                linkConfiguration: this.linkConfiguration,
+                paragraphConfig: this.paragraphConfig,
+                tagConfiguration: this.tagConfiguration));
+        }
     });
 
     return widgets;

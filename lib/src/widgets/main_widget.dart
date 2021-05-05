@@ -83,7 +83,7 @@ class _StringTypographyState extends State<StringTypography> {
   }
 
   void _process(String text) {
-    final ParagraphSpeller speller = ParagraphSpeller(
+    ParagraphSpeller speller = ParagraphSpeller(
         codeBlockConfig: widget.codeBlockConfiguration,
         commonSetting: widget.commonSetting ?? [],
         inlineCodeConfiguration: widget.inlineCodeConfiguration,
@@ -92,7 +92,8 @@ class _StringTypographyState extends State<StringTypography> {
         tagConfiguration: widget.tagConfiguration,
         linkConfiguration: widget.linkConfiguration,
         paragraphConfig: widget.paragraphConfig);
-    _widgets = speller.process(text);
+
+    if (text != "") _widgets = speller.process(text);
 
     setState(() {
       loading = false;

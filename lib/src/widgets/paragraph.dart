@@ -72,87 +72,93 @@ class StParagraph extends StatelessWidget {
         };
     }
 
-    words.forEach((w) {
-      if (w != "") {
-        TextSpan span = TextSpan(text: w, style: this.globalStyle);
-        BracketType type = BracketType.none;
+    if (words.isNotEmpty)
+      words.forEach((w) {
+        if (w != "") {
+          TextSpan span = TextSpan(text: w, style: this.globalStyle);
+          BracketType type = BracketType.none;
+          if (this.mainsettings.isNotEmpty)
+            this.mainsettings.forEach((r) {
+              if (w.contains(r.open) && w.contains(r.close)) {
+                String word = w.replaceAll(r.open, "").replaceAll(r.close, "");
+                type = BracketType.bracket;
+                if (r.type == SettingType.common) {
+                  span = _mergeSpan(
+                    span,
+                    text: word,
+                    style: span.style?.merge(r.style) ?? r.style,
+                    recognizer: r.recognizer,
+                  );
+                } else if (r.type == SettingType.inlineCode) {
+                  span = _mergeSpan(span,
+                      text: " " + word + " ",
+                      style: this.inlineCodeConfiguration.style,
+                      recognizer: _recognizer(word, SettingType.inlineCode));
+                } else if (r.type == SettingType.hyperlink) {
+                  var replacement = _hyperlinkReplacement(word);
+                  word = replacement['word']!;
+                  span = _mergeSpan(span,
+                      style: span.style?.merge(this.linkConfiguration.style) ??
+                          this.linkConfiguration.style,
+                      text: word,
+                      recognizer:
+                          _recognizer(replacement['url']!, SettingType.url));
+                } else {
+                  span = _mergeSpan(span,
+                      text: word,
+                      style: span.style != null //remove dirty statement
+                          ? span.style!.merge(r.type == SettingType.tag
+                              ? this.tagConfiguration.style
+                              : r.type == SettingType.url
+                                  ? this.linkConfiguration.style
+                                  : this.emailConfiguration.style)
+                          : r.type == SettingType.tag
+                              ? this.tagConfiguration.style
+                              : r.type == SettingType.url
+                                  ? this.linkConfiguration.style
+                                  : this.emailConfiguration.style,
+                      recognizer: _recognizer(word, r.type));
+                }
+              } else if (w.contains(r.open)) {
+                type = BracketType.open;
 
-        this.mainsettings.forEach((r) {
-          if (w.contains(r.open) && w.contains(r.close)) {
-            String word = w.replaceAll(r.open, "").replaceAll(r.close, "");
-            type = BracketType.bracket;
-            if (r.type == SettingType.common) {
-              span = _mergeSpan(
-                span,
-                text: word,
-                style: span.style!.merge(r.style),
-                recognizer: r.recognizer,
-              );
-            } else if (r.type == SettingType.inlineCode) {
-              span = _mergeSpan(span,
-                  text: " " + word + " ",
-                  style: this.inlineCodeConfiguration.style,
-                  recognizer: _recognizer(word, SettingType.inlineCode));
+                span = _mergeSpan(
+                  span,
+                  text: w.replaceAll(r.open, ""),
+                  style: span.style!.merge(r.style),
+                  recognizer: r.recognizer,
+                );
+              } else if (w.contains(r.close)) {
+                type = BracketType.close;
+
+                span = _mergeSpan(
+                  span,
+                  text: w.replaceAll(r.close, ""),
+                  style: span.style!.merge(r.style),
+                  recognizer: r.recognizer,
+                );
+              }
+            });
+
+          if (type == BracketType.open) {
+            if (styless.isNotEmpty) {
+              styless.add(styless.last.merge(span.style));
             } else {
-              if (r.type == SettingType.hyperlink) {
-                var replacement = _hyperlinkReplacement(word);
-                word = replacement['word']!;
-                print(replacement);
-                print("disini ");
-                span = _mergeSpan(span,
-                    style: span.style!.merge(this.linkConfiguration.style),
-                    text: word,
-                    recognizer:
-                        _recognizer(replacement['url']!, SettingType.url));
-              } else
-                span = _mergeSpan(span,
-                    text: word,
-                    style: span.style!.merge(r.type == SettingType.tag
-                        ? this.tagConfiguration.style
-                        : r.type == SettingType.url
-                            ? this.linkConfiguration.style
-                            : this.emailConfiguration.style),
-                    recognizer: _recognizer(word, r.type));
+              styless.add(span.style!);
             }
-          } else if (w.contains(r.open)) {
-            type = BracketType.open;
-
-            span = _mergeSpan(
-              span,
-              text: w.replaceAll(r.open, ""),
-              style: span.style!.merge(r.style),
-              recognizer: r.recognizer,
-            );
-          } else if (w.contains(r.close)) {
-            type = BracketType.close;
-
-            span = _mergeSpan(
-              span,
-              text: w.replaceAll(r.close, ""),
-              style: span.style!.merge(r.style),
-              recognizer: r.recognizer,
-            );
-          }
-        });
-
-        if (type == BracketType.open) {
-          if (styless.isNotEmpty) {
-            styless.add(styless.last.merge(span.style));
+            stSpans.add(_mergeSpan(span, style: styless.last));
+          } else if (type == BracketType.close) {
+            stSpans
+                .add(_mergeSpan(span, style: styless.last.merge(span.style)));
+            styless.removeLast();
           } else {
-            styless.add(span.style!);
+            stSpans.add(_mergeSpan(span,
+                style: styless.isNotEmpty
+                    ? styless.last.merge(span.style)
+                    : span.style));
           }
-          stSpans.add(_mergeSpan(span, style: styless.last));
-        } else if (type == BracketType.close) {
-          stSpans.add(_mergeSpan(span, style: styless.last.merge(span.style)));
-          styless.removeLast();
-        } else {
-          stSpans.add(_mergeSpan(span,
-              style: styless.isNotEmpty
-                  ? styless.last.merge(span.style)
-                  : span.style));
         }
-      }
-    });
+      });
     return LayoutBuilder(builder: (context, cs) {
       return Container(
         width: cs.maxWidth,

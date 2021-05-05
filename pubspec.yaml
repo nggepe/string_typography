@@ -1,6 +1,6 @@
 name: string_typography
 description: A string converter that converts strings to widgets typography.
-version: 0.0.1-dev.1
+version: 0.0.1-dev.2
 issue_tracker: https://github.com/nggepe/string_typography
 homepage: "https://github.com/nggepe/string_typography"
 
@@ -11,6 +11,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  mocktail_image_network: ^0.1.0
 
 dev_dependencies:
   flutter_test:
