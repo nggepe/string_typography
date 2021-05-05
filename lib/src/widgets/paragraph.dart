@@ -94,32 +94,30 @@ class StParagraph extends StatelessWidget {
                       text: " " + word + " ",
                       style: this.inlineCodeConfiguration.style,
                       recognizer: _recognizer(word, SettingType.inlineCode));
+                } else if (r.type == SettingType.hyperlink) {
+                  var replacement = _hyperlinkReplacement(word);
+                  word = replacement['word']!;
+                  span = _mergeSpan(span,
+                      style: span.style?.merge(this.linkConfiguration.style) ??
+                          this.linkConfiguration.style,
+                      text: word,
+                      recognizer:
+                          _recognizer(replacement['url']!, SettingType.url));
                 } else {
-                  if (r.type == SettingType.hyperlink) {
-                    var replacement = _hyperlinkReplacement(word);
-                    word = replacement['word']!;
-                    print(replacement);
-                    print("disini ");
-                    span = _mergeSpan(span,
-                        style: span.style!.merge(this.linkConfiguration.style),
-                        text: word,
-                        recognizer:
-                            _recognizer(replacement['url']!, SettingType.url));
-                  } else
-                    span = _mergeSpan(span,
-                        text: word,
-                        style: span.style != null //remove dirty statement
-                            ? span.style!.merge(r.type == SettingType.tag
-                                ? this.tagConfiguration.style
-                                : r.type == SettingType.url
-                                    ? this.linkConfiguration.style
-                                    : this.emailConfiguration.style)
-                            : r.type == SettingType.tag
-                                ? this.tagConfiguration.style
-                                : r.type == SettingType.url
-                                    ? this.linkConfiguration.style
-                                    : this.emailConfiguration.style,
-                        recognizer: _recognizer(word, r.type));
+                  span = _mergeSpan(span,
+                      text: word,
+                      style: span.style != null //remove dirty statement
+                          ? span.style!.merge(r.type == SettingType.tag
+                              ? this.tagConfiguration.style
+                              : r.type == SettingType.url
+                                  ? this.linkConfiguration.style
+                                  : this.emailConfiguration.style)
+                          : r.type == SettingType.tag
+                              ? this.tagConfiguration.style
+                              : r.type == SettingType.url
+                                  ? this.linkConfiguration.style
+                                  : this.emailConfiguration.style,
+                      recognizer: _recognizer(word, r.type));
                 }
               } else if (w.contains(r.open)) {
                 type = BracketType.open;

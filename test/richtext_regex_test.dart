@@ -173,4 +173,26 @@ void main() async {
             skipOffstage: false),
         findsOneWidget);
   });
+
+  testWidgets("inline code finder - material", (WidgetTester tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: ListView(
+          children: [
+            StringTypography(
+              text: "`hai`",
+              key: Key("testWidget"),
+            ),
+          ],
+        ),
+      ),
+    ));
+
+    expect(
+        find.byWidgetPredicate(
+            (Widget widget) =>
+                widget is RichText && widget.text.toPlainText() == " hai ",
+            skipOffstage: false),
+        findsOneWidget);
+  });
 }

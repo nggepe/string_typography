@@ -34,6 +34,7 @@ class ParagraphSpeller {
 
   final String _separator = "™»\n«™";
   final String _paragraphSeparator = "™»p\np«™";
+  final String _hyperlinkSeparator = "™»hy\nhy«™";
 
   List<Widget> process(String text) {
     List<Widget> widgets = [];
@@ -84,62 +85,103 @@ class ParagraphSpeller {
               i++;
             });
 
-            int j = 0;
-            TagSetting.defaultconfiguration.forEach((element) {
-              String open = "™»${j.toString()}Q«™",
-                  close = "™»${j.toString()}D«™";
-              paragraph = paragraph.replaceAllMapped(element.regExp, (match) {
-                String confirm = "";
+            ///hyperlink separator must be here
 
-                if (paragraph.length > match.end)
-                  confirm = paragraph.substring(match.end, match.end + 1);
-                if (match.start > 0)
-                  confirm = paragraph.substring(match.start - 1, match.start);
+            List<String> sentences = paragraph
+                .replaceAllMapped(TagSetting.hyperlink.regExp, (match) {
+              //to remove crash with url
+              // String confirm = "";
 
-                if (confirm == "" || confirm == " " || confirm == "\n")
-                  return this._separator +
-                      "$open${match.group(0)}$close" +
-                      this._separator;
-                else
-                  return match.group(0)!;
-              });
-              mainsettings.add(MainSetting(
-                  open: open,
-                  close: close,
-                  style: element.style,
-                  type: element.type));
-              j++;
+              // if (paragraph.length > match.end)
+              //   confirm = paragraph.substring(match.end, match.end + 1);
+              // if (match.start > 0)
+              //   confirm = paragraph.substring(match.start - 1, match.start);
+
+              // if (confirm == "" || confirm == " " || confirm == "\n") {
+              return this._hyperlinkSeparator +
+                  "™»Q«™${match.group(0)}™»Q«™" +
+                  this._hyperlinkSeparator;
+              // } else
+              //   return match.group(0)!;
+            }).split(this._hyperlinkSeparator);
+            String newSentences = "";
+            sentences.forEach((sentence) {
+              if (!sentence.contains("™»Q«™") && sentence != "") {
+                int j = 0;
+                TagSetting.defaultconfiguration.forEach((element) {
+                  String open = "™»${j.toString()}Q«™",
+                      close = "™»${j.toString()}D«™";
+                  sentence = sentence.replaceAllMapped(element.regExp, (match) {
+                    String confirm = "";
+
+                    if (sentence.length > match.end)
+                      confirm = sentence.substring(match.end, match.end + 1);
+                    if (match.start > 0)
+                      confirm =
+                          sentence.substring(match.start - 1, match.start);
+
+                    if (confirm == "" || confirm == " " || confirm == "\n")
+                      return this._separator +
+                          "$open${match.group(0)}$close" +
+                          this._separator;
+                    else
+                      return match.group(0)!;
+                  });
+                  mainsettings.add(MainSetting(
+                      open: open,
+                      close: close,
+                      style: element.style,
+                      type: element.type));
+                  j++;
+                });
+
+                int k = 0;
+                TagSetting.inlineCode.forEach((iC) {
+                  String open = "™»${k.toString()}R«™",
+                      close = "™»${k.toString()}E«™";
+                  sentence = sentence.replaceAllMapped(iC.regExp, (match) {
+                    String confirm = "";
+
+                    if (sentence.length > match.end)
+                      confirm = sentence.substring(match.end, match.end + 1);
+                    if (match.start > 0)
+                      confirm =
+                          sentence.substring(match.start - 1, match.start);
+
+                    if (confirm == "" || confirm == " " || confirm == "\n")
+                      return this._separator +
+                          "$open${match.group(2)}$close" +
+                          this._separator;
+                    else
+                      return match.group(0)!;
+                  });
+
+                  if (mainsettings.indexWhere((element) =>
+                          element.open == open && element.close == close) ==
+                      -1)
+                    mainsettings.add(MainSetting(
+                        open: open,
+                        close: close,
+                        type: iC.type,
+                        style: this.inlineCodeConfiguration.style));
+
+                  k++;
+                });
+              } else if (sentence != "") {
+                sentence += this._separator;
+                if (mainsettings
+                        .indexWhere((element) => element.open == "™»Q«™") ==
+                    -1)
+                  mainsettings.add(MainSetting(
+                      open: "™»Q«™",
+                      close: "™»Q«™",
+                      type: TagSetting.hyperlink.type));
+              }
+
+              newSentences += sentence;
             });
 
-            int k = 0;
-            TagSetting.inlineCode.forEach((iC) {
-              String open = "™»${k.toString()}R«™",
-                  close = "™»${k.toString()}E«™";
-              paragraph = paragraph.replaceAllMapped(iC.regExp, (match) {
-                String confirm = "";
-
-                if (paragraph.length > match.end)
-                  confirm = paragraph.substring(match.end, match.end + 1);
-                if (match.start > 0)
-                  confirm = paragraph.substring(match.start - 1, match.start);
-
-                if (confirm == "" || confirm == " " || confirm == "\n")
-                  return this._separator +
-                      "$open${match.group(2)}$close" +
-                      this._separator;
-                else
-                  return match.group(0)!;
-              });
-
-              mainsettings.add(MainSetting(
-                  open: open,
-                  close: close,
-                  type: iC.type,
-                  style: this.inlineCodeConfiguration.style));
-
-              k++;
-            });
-            List<String> stParagraph = paragraph.split(this._separator);
+            List<String> stParagraph = newSentences.split(this._separator);
             widgets.add(StParagraph(stParagraph,
                 globalStyle: this.globalStyle,
                 mainsettings: mainsettings,
