@@ -42,4 +42,26 @@ void main() {
       expect(find.byType(Image, skipOffstage: false), findsOneWidget);
     });
   });
+
+  testWidgets("Code block finder - material", (WidgetTester tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: ListView(
+          children: [
+            StringTypography(
+              text: "```\nhai\n```",
+              key: Key("testWidget"),
+            ),
+          ],
+        ),
+      ),
+    ));
+
+    expect(
+        find.byWidgetPredicate(
+            (Widget widget) =>
+                widget is RichText && widget.text.toPlainText() == "hai\n",
+            skipOffstage: false),
+        findsOneWidget);
+  });
 }
