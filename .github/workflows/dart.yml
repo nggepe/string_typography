@@ -23,9 +23,7 @@ jobs:
         with:
           channel: "stable"
       - name: Install Dependencies
-        run: flutter pub get
-      - name: Install Dependencies
-        run: dart pub get
+        run: pub get
       - name: Format
         run: dartfmt --dry-run --set-exit-if-changed .
       - name: Analyze
