@@ -15,8 +15,6 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
-    container:
-      image: google/dart:2.12
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -34,8 +32,10 @@ jobs:
         run: dart analyze --fatal-infos --fatal-warnings .
       - name: Flutter Analyze
         run: flutter analyze
+      - name: Flutter test
+        run: flutter test
       - name: Run test
-        run: dart test --coverage=coverage && pub run coverage:format_coverage --lcov --in=coverage --out=coverage/lcov.info --packages=.packages --report-on=lib
+        run: --coverage=coverage && pub run coverage:format_coverage --lcov --in=coverage --out=coverage/lcov.info --packages=.packages --report-on=lib
       - name: Check Code Coverage
         uses: VeryGoodOpenSource/very_good_coverage@v1.1.1
         with:
