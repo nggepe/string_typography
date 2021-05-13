@@ -33,9 +33,9 @@ jobs:
       - name: Run test
         run: flutter test --coverage
       - name: Check Code Coverage
-        uses: VeryGoodOpenSource/very_good_coverage@v1.1.1
-        with:
-          path: coverage/lcov.info
+        # uses: VeryGoodOpenSource/very_good_coverage@v1.1.1
+        # with:
+        #   path: coverage/lcov.info
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
