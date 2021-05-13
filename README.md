@@ -1,4 +1,4 @@
-# Introduction
+# ⚕ String Typography
 
 This package is a `String` converter which is usable to convert plain string to be widgets.
 Our goal is all of stuff can be customizeable.
@@ -70,7 +70,7 @@ example
 
 1. Automatically build code block that depen on your text (using triple backtick)
 2. Copy clippboard configuration
-3. Code highlihgt
+3. Code highlihgt 
 
 
 
