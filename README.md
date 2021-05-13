@@ -70,7 +70,7 @@ example
 
 1. Automatically build code block that depen on your text (using triple backtick)
 2. Copy clippboard configuration
-3. Code highlihgt
+3. Code highlihgt 
 
 
 
