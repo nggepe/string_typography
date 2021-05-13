@@ -31,7 +31,7 @@ jobs:
       - name: Flutter Analyze
         run: flutter analyze
       - name: Run test
-        run: flutter test --coverage=coverage && pub run coverage:format_coverage --lcov --in=coverage --out=coverage/lcov.info --packages=.packages --report-on=lib
+        run: flutter test --coverage
       - name: Check Code Coverage
         uses: VeryGoodOpenSource/very_good_coverage@v1.1.1
         with:
