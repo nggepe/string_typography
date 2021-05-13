@@ -79,7 +79,7 @@ packages:
     source: hosted
     version: "3.0.0"
   coverage:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: coverage
       url: "https://pub.dartlang.org"
@@ -180,7 +180,7 @@ packages:
     source: hosted
     version: "1.0.0"
   mocktail:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: mocktail
       url: "https://pub.dartlang.org"
@@ -215,7 +215,7 @@ packages:
     source: hosted
     version: "1.8.0"
   pedantic:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: pedantic
       url: "https://pub.dartlang.org"
@@ -235,6 +235,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.0"
+  rxdart:
+    dependency: "direct dev"
+    description:
+      name: rxdart
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.26.0"
   shelf:
     dependency: transitive
     description:
@@ -318,7 +325,7 @@ packages:
     source: hosted
     version: "1.2.0"
   test:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: test
       url: "https://pub.dartlang.org"
@@ -379,7 +386,7 @@ packages:
       name: webkit_inspection_protocol
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.0"
+    version: "0.7.5"
   yaml:
     dependency: transitive
     description:
